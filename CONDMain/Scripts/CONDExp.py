@@ -2,23 +2,19 @@ from psychopy.visual import *
 from psychopy import gui
 from psychopy.event import *
 from psychopy import monitors
-from pyglet.window import key
+#from pyglet.window import key
 from psychopy import core
-from psychopy import logging
-from psychopy.tools import monitorunittools as mut
 import pygame
 import pyglet
 from pygame.locals import *
 from random import *
 from time import *
 from datetime import datetime
-import os, sys
+import os
 import pickle
-from math import pi, cos, sin, atan2, sqrt, ceil, trunc
-from numpy import degrees, uint8, mean
+from math import ceil, trunc
+from numpy import mean
 import pandas as pd
-import serial.tools.list_ports
-import serial
 import warnings
 
 warnings.filterwarnings("ignore")
