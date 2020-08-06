@@ -1,21 +1,27 @@
-from psychopy.visual import *
-from psychopy import gui
-from psychopy.event import *
-from psychopy import monitors
-#from pyglet.window import key
-from psychopy import core
-import pygame
-import pyglet
-from pygame.locals import *
+modules = [['psychopy', ['gui', 'monitors', 'core']],
+['psychopy.visual', ['TextStim', 'ImageStim', 'Window']],
+['psychopy.event', ['getKeys', 'waitKeys']],
+['pygame'],
+['numpy', ['mean']],
+['pandas'],
+['PyQt5']
+]
+
+import os, sys, subprocess, warnings
 from random import *
-from time import *
+from time import strftime
 from datetime import datetime
-import os
-import pickle
 from math import ceil, trunc
-from numpy import mean
-import pandas as pd
-import warnings
+
+for library in modules:
+	try:
+		if len(library) > 1:
+			for x in library[1]:
+				exec("from {module} import {submodule}".format(module=library[0], submodule=x))
+		elif len(library) == 1:
+			exec("import {module}".format(module=library[0]))
+	except Exception as e:
+		subprocess.check_call([sys.executable, "-m", "pip3", "install", library[0]])
 
 warnings.filterwarnings("ignore")
 
@@ -328,7 +334,7 @@ class LocalGame:
 					})
 
 	def loadCustom(self):
-		customdf = pd.read_csv(RESOURCE_FOLDER+CUSTOM_RUN_FOLDER+self.custom_input, delimiter=',', index_col=False)
+		customdf = pandas.read_csv(RESOURCE_FOLDER+CUSTOM_RUN_FOLDER+self.custom_input, delimiter=',', index_col=False)
 		self.trial_bank = []
 		for i, x in customdf.iterrows():
 			self.trial_bank.append({
@@ -508,7 +514,7 @@ class Interact:
 		self.choice = None
 
 	def actionCont(self):
-		self.choice = psychopy.event.waitKeys(keyList = [RESPOND_KEY, QUIT_KEY])
+		self.choice = waitKeys(keyList = [RESPOND_KEY, QUIT_KEY])
 		if self.choice[0] == QUIT_KEY:
 			game.finalSave(game.APPEND + '_QUIT')
 			game.localGraphics.win.close()
@@ -519,7 +525,7 @@ class Interact:
 		while diff.total_seconds() < time:
 			now = datetime.now()
 			diff = now-then
-			key = psychopy.event.getKeys(keyList = [QUIT_KEY], timeStamped = True)
+			key = getKeys(keyList = [QUIT_KEY], timeStamped = True)
 			if len(key) > 0:
 				if key[-1][0] == QUIT_KEY:
 					game.finalSave(game.APPEND + '_QUIT')
@@ -531,7 +537,7 @@ class Interact:
 		then = datetime.now(); now = datetime.now(); diff = now-then
 		responded = False
 		while diff.total_seconds() < time:
-			key = psychopy.event.getKeys(keyList = [RESPOND_KEY, QUIT_KEY], timeStamped = True)
+			key = getKeys(keyList = [RESPOND_KEY, QUIT_KEY], timeStamped = True)
 			if len(key) > 0:
 				rt = int((now-then).total_seconds()*1000)
 				if key[-1][0] == RESPOND_KEY:

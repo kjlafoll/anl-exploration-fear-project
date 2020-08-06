@@ -1,0 +1,2 @@
+cs_duration	us_duration	traceinterval_duration	iti_duration	cs_type	us_stimulus_name	reinforced	overlap	cs_onset	us_onset	us_rt	us_offset	trial	id
+10.0	NA - Habituation	0.0	8.0	CS-	NA - Habituation	NA - Habituation	NA - Habituation	40.286427	NA - Habituation	NA - Habituation	NA - Habituation	1	3345
