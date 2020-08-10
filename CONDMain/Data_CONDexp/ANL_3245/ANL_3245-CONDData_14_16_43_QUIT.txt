@@ -1,3 +1,0 @@
-cs_duration	us_duration	traceinterval_duration	iti_duration	cs_type	us_stimulus_name	overlap	reinforced	cs_onset	us_onset	us_rt	us_offset	trial	id
-9.18618032267917	4.0	0.0	9.024616180871892	CS-	8010.jpg	True	True	52.65608	58.351994	478	62.352048	1	3245
-9.804307081182227	4.0	0.0	9.730434059301002	CS+	6370.jpg	True	True	72.447288	78.377679	292	82.377729	2	3245

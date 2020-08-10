@@ -7,7 +7,7 @@ modules = [['psychopy', ['gui', 'monitors', 'core']],
 ['PyQt5']
 ]
 
-import os, sys, subprocess, warnings
+import os, sys, subprocess, warnings, csv
 from random import *
 from time import strftime
 from datetime import datetime
@@ -112,6 +112,7 @@ class LocalGame:
 		self.start()
 
 	def start(self):
+		self.saveTemplate()
 		if self.design_input != 'Custom':
 			self.generateTimeBank()
 			self.generateUSBank()
@@ -153,7 +154,7 @@ class LocalGame:
 		else:
 			dlg = gui.Dlg(title="CONDexp")
 			dlg.addText("Experiment Parameters")
-			dlg.addField("Enter full filename of custom runlist located in %s. Must be csv and include .csv in filename" % RESOURCE_FOLDER+CUSTOM_RUN_FOLDER)
+			dlg.addField("Enter full filename of custom runlist located in %s. \nMust be csv and include .csv in filename" % (RESOURCE_FOLDER+CUSTOM_RUN_FOLDER))
 			input_data = dlg.show()
 			if dlg.OK == False:
 				core.quit()
@@ -337,16 +338,35 @@ class LocalGame:
 		customdf = pandas.read_csv(RESOURCE_FOLDER+CUSTOM_RUN_FOLDER+self.custom_input, delimiter=',', index_col=False)
 		self.trial_bank = []
 		for i, x in customdf.iterrows():
+			try:
+				usdur = int(x['us_duration'])
+			except:
+				usdur = x['us_duration']
 			self.trial_bank.append({
-				"cs_duration": x['cs_duration'][0],
-				"us_duration": x['us_duration'][0],
-				"traceinterval_duration": x['traceinterval_duration'][0],
-				"iti_duration": x['iti_duration'][0],
-				"cs_type": x['cs_type'][0],
-				"us_stimulus_name": x['us_stimulus_name'][0],
-				"reinforced": x['reinforced'][0],
-				"overlap": x['overlap'][0]
+				"cs_duration": x['cs_duration'],
+				"us_duration": usdur,
+				"traceinterval_duration": x['traceinterval_duration'],
+				"iti_duration": x['iti_duration'],
+				"cs_type": x['cs_type'],
+				"us_stimulus_name": x['us_stimulus_name'],
+				"reinforced": x['reinforced'],
+				"overlap": x['overlap']
 				})
+
+	def saveTemplate(self):
+		data = {'cs_duration': [8, 11, 9, 12, 6, 6, 6, 6],
+		'us_duration': ['NA - Habituation', 'NA - Habituation', 4, 4, 4, 4, 4, 4],
+		'traceinterval_duration': [0, 0, 0, 0, 2, 2.5, 1.5, 2],
+		'iti_duration': [6, 6, 6, 6, 4, 4, 4, 4],
+		'cs_type': ['CS+', 'CS-', 'CS-', 'CS+', 'CS-', 'CS+', 'CS-', 'CS+'],
+		'us_stimulus_name': ['NA - Habituation', 'NA - Habituation', 'ns.png', 'us.png', 'ns.png', 'us.png', 'ns.png', 'us.png'],
+		'reinforced': ['NA - Habituation', 'NA - Habituation', 'True', 'True', 'True', 'False', 'True', 'True'],
+		'overlap': ['NA - Habituation', 'NA - Habituation', 'True', 'True', 'False', 'False', 'False', 'False']
+		}
+		with open(RESOURCE_FOLDER+CUSTOM_RUN_FOLDER+'runlist_template.csv', 'w') as f:
+			writer = csv.writer(f)
+			writer.writerow(data.keys())
+			writer.writerows(zip(*data.values()))
 
 	# samplecustom = {
 	# "cs_duration": [8, 7, 9],
@@ -366,11 +386,11 @@ class LocalGame:
 	def runCondInst(self):
 		self.localGraphics.clearDisplay()
 		numt = [1 if x['us_duration'] != "NA - Habituation" else 0 for x in self.trial_bank].count(1)
-		textlist = ["For the next %s trials, you will see pictures of images above the pictures of shapes" % str(numt),
-		"", "These pictures of images will appear shortly after the pictures of shapes.", "",
-		"Your job is to press the %s button as soon as you see the image." % RESPOND_KEY, "",
+		textlist = ["For the next %s trials, you will see pictures of images above pictures of shapes" % str(numt),
+		"", "These images will appear shortly after the shapes.", "",
+		"Your job is to press the %s button as soon as you see the new image." % RESPOND_KEY, "",
 		"Please only press once. A few moments after you respond, these pictures will dissapear.", "",
-		"Please attending to all images and try to respond as quickly as possible."]
+		"Please attend to all images and try to respond as quickly as possible."]
 		self.localGraphics.instructScreen(textlist)
 		self.state.actionCont()
 		return
@@ -480,7 +500,7 @@ class GameGraphics:
 	def instructScreen(self, textlist):
 		textStim = {}
 		for i, x in enumerate(textlist):
-			textStim["inst_%s" % str(i+1)] = TextStim(self.win, text=x, pos=(0, 50*((len(textlist)-1)/2)-50*i), height=INSTRUCT_SIZE, color=INSTRUCT_COLOR, colorSpace='rgb')
+			textStim["inst_%s" % str(i+1)] = TextStim(self.win, text=x, pos=(0, 35*((len(textlist)-1)/2)-35*i), height=INSTRUCT_SIZE, color=INSTRUCT_COLOR, colorSpace='rgb')
 		for x in list(textStim.keys()):
 			textStim[x].draw()
 		self.win.update()
