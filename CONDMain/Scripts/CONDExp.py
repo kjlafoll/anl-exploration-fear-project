@@ -1,5 +1,5 @@
 modules = [['psychopy', ['gui', 'monitors', 'core']],
-['psychopy.visual', ['TextStim', 'ImageStim', 'Window']],
+['psychopy.visual', ['TextStim', 'ImageStim', 'Rect', 'Window']],
 ['psychopy.event', ['getKeys', 'waitKeys']],
 ['pygame'],
 ['numpy', ['mean']],
@@ -21,27 +21,34 @@ for library in modules:
 		elif len(library) == 1:
 			exec("import {module}".format(module=library[0]))
 	except Exception as e:
-		subprocess.check_call([sys.executable, "-m", "pip3", "install", library[0]])
+		try:
+			subprocess.check_call([sys.executable, "-m", "pip", "install", library[0]])
+		except:
+			try:
+				subprocess.check_call([sys.executable, "-m", "pip3", "install", library[0]])
+			except:
+				print("Cannot pip install %s library. Check pip before continuing. Remember, you cannot install libraries via pip within the PsychoPy app." % library[0])
 
 warnings.filterwarnings("ignore")
 
 MONITOR_WIDTH = 50
 MONITOR_DIST = 55
 MONITOR_SIZE = [1280,800]
-MONITOR_UNITS = 'pix'
+MONITOR_UNITS = 'norm'
 WINDOW_SIZE = (1200,900)
 
 COLOR_BLACK = [0,0,0]
 COLOR_WHITE = [1,1,1]
 
-FIXATION_SIZE = 75
+FIXATION_SIZE = .25
 FIXATION_COLOR = COLOR_WHITE
-INSTRUCT_SIZE = 40
+INSTRUCT_SIZE = .075
 INSTRUCT_COLOR = COLOR_WHITE
-CS_SIZE = (100,100)
-US_SIZE = (300,250)
-CS_POS = (0,-150)
-US_POS = (0,150)
+LINE_SEP = .05
+CS_SIZE = .4
+US_SIZE = .4
+CS_POS = (0,-.4)
+US_POS = (0,.4)
 
 PARTIAL_PERCENT = 0.5
 
@@ -368,13 +375,6 @@ class LocalGame:
 			writer.writerow(data.keys())
 			writer.writerows(zip(*data.values()))
 
-	# samplecustom = {
-	# "cs_duration": [8, 7, 9],
-	# "us_duration": ["NA - Habituation", 4, 4],
-	# "traceinterval_duration": [0, ]
-
-	# }
-
 	def runHabitInst(self):
 		self.localGraphics.clearDisplay()
 		numt = [x['us_duration'] for x in self.trial_bank].count("NA - Habituation")
@@ -389,7 +389,10 @@ class LocalGame:
 		textlist = ["For the next %s trials, you will see pictures of images above pictures of shapes" % str(numt),
 		"", "These images will appear shortly after the shapes.", "",
 		"Your job is to press the %s button as soon as you see the new image." % RESPOND_KEY, "",
-		"Please only press once. A few moments after you respond, these pictures will dissapear.", "",
+		"Please only press once. A box will appear around the image once you do.", "",
+		"A few moments after you respond, the pictures will dissapear.", "",
+		"Try not to press the %s button when the new images are not present. We record all responses.", "",
+		"Too many false starts will disqualify your participation.", "",
 		"Please attend to all images and try to respond as quickly as possible."]
 		self.localGraphics.instructScreen(textlist)
 		self.state.actionCont()
@@ -400,32 +403,34 @@ class LocalGame:
 			self.runHabitInst()
 		elif trial == 1 and self.trial_bank[trial-1]['us_duration'] != "NA - Habituation":
 			self.runCondInst()
+			self.starttime = datetime.now()
 		elif self.trial_bank[trial-1]['us_duration'] != "NA - Habituation" and self.trial_bank[trial-2]['us_duration'] == "NA - Habituation":
 			self.runCondInst()
 		self.localGraphics.clearDisplay()
+		self.trial_bank[trial-1]['fs_response_time'] = []
 		textlist = [{'text':"+", 'height':FIXATION_SIZE, 'color':FIXATION_COLOR, 'pos':(0,0)}]
 		self.localGraphics.textScreen(textlist)
-		self.state.actionWait(self.trial_bank[trial-1]['iti_duration'])
+		self.trial_bank[trial-1]['fs_response_time'].append(self.state.actionWait(self.trial_bank[trial-1]['iti_duration']))
 		return
 
 	def runCS(self, trial):
 		self.localGraphics.clearDisplay()
 		csstim = {'CS+': CS_POS_NAME, 'CS-': CS_NEG_NAME}
 		cslist = [{'folder':CS_FOLDER, 'name':csstim[self.trial_bank[trial-1]['cs_type']], 'size':CS_SIZE, 'pos':CS_POS}]
-		self.localGraphics.stimScreen(cslist)
-		self.trial_bank[trial-1]['cs_onset'] = (datetime.now() - starttime).total_seconds()
+		self.localGraphics.stimScreen(cslist, False)
+		self.trial_bank[trial-1]['cs_onset'] = (datetime.now() - self.starttime).total_seconds()
 		if self.trial_bank[trial-1]['overlap'] == "True":
 			waitdur = self.trial_bank[trial-1]['cs_duration'] - self.trial_bank[trial-1]['us_duration']
 		else:
 			waitdur = self.trial_bank[trial-1]['cs_duration']
-		self.state.actionWait(waitdur)
+		self.trial_bank[trial-1]['fs_response_time'].append(self.state.actionWait(waitdur))
 		return
 
 	def runTI(self, trial):
 		if self.trial_bank[trial-1]['overlap'] == "False":
 			self.localGraphics.clearDisplay()
-			self.trial_bank[trial-1]['cs_offset'] = (datetime.now() - starttime).total_seconds()
-			self.state.actionWait(self.trial_bank[trial-1]['traceinterval_duration'])
+			self.trial_bank[trial-1]['cs_offset'] = (datetime.now() - self.starttime).total_seconds()
+			self.trial_bank[trial-1]['fs_response_time'].append(self.state.actionWait(self.trial_bank[trial-1]['traceinterval_duration']))
 		return
 
 	def runUS(self, trial):
@@ -442,17 +447,18 @@ class LocalGame:
 		if usexist == True:
 			if self.trial_bank[trial-1]['overlap'] == "True":
 				uslist.append({'folder':CS_FOLDER, 'name':csstim[self.trial_bank[trial-1]['cs_type']], 'size':CS_SIZE, 'pos':CS_POS})
-			self.localGraphics.stimScreen(uslist)
-			self.trial_bank[trial-1]['us_onset'] = (datetime.now() - starttime).total_seconds()
-			self.trial_bank[trial-1]['us_rt'] = self.state.actionRespond(self.trial_bank[trial-1]['us_duration'])
-			stoptime = (datetime.now() - starttime).total_seconds()
+			self.localGraphics.stimScreen(uslist, False)
+			self.trial_bank[trial-1]['us_onset'] = (datetime.now() - self.starttime).total_seconds()
+			self.trial_bank[trial-1]['us_rt'] = self.state.actionRespond(self.trial_bank[trial-1]['us_duration'], uslist)
+			stoptime = (datetime.now() - self.starttime).total_seconds()
 			self.trial_bank[trial-1]['us_offset'] = stoptime
 			if self.trial_bank[trial-1]['overlap'] == "True":
-				self.trial_bank[trial-1]['us_offset'] = stoptime
+				self.trial_bank[trial-1]['cs_offset'] = stoptime
 		else:
 			self.trial_bank[trial-1]['us_onset'] = "NA - Habituation"
 			self.trial_bank[trial-1]['us_rt'] = "NA - Habituation"
 			self.trial_bank[trial-1]['us_offset'] = "NA - Habituation"
+		self.trial_bank[trial-1]['fs_response_time'] = [item for sublist in self.trial_bank[trial-1]['fs_response_time'] for item in sublist]
 		return
 
 	def runStageE(self): #END SCREEN
@@ -500,15 +506,17 @@ class GameGraphics:
 	def instructScreen(self, textlist):
 		textStim = {}
 		for i, x in enumerate(textlist):
-			textStim["inst_%s" % str(i+1)] = TextStim(self.win, text=x, pos=(0, 35*((len(textlist)-1)/2)-35*i), height=INSTRUCT_SIZE, color=INSTRUCT_COLOR, colorSpace='rgb')
+			textStim["inst_%s" % str(i+1)] = TextStim(self.win, text=x, pos=(0, LINE_SEP*((len(textlist)-1)/2)-LINE_SEP*i), height=INSTRUCT_SIZE, color=INSTRUCT_COLOR, colorSpace='rgb')
 		for x in list(textStim.keys()):
 			textStim[x].draw()
 		self.win.update()
 
-	def stimScreen(self, imglist):
+	def stimScreen(self, imglist, responded):
 		imgStim = {}
 		for i, x in enumerate(imglist):
-			imgStim['img_%s' % str(i-1)] = ImageStim(self.win, image="%s" % RESOURCE_FOLDER+x['folder']+x['name'], size=x['size'], pos=x['pos'], colorSpace='rgb')
+			imgStim['img_%s' % str(i+1)] = ImageStim(self.win, image="%s" % RESOURCE_FOLDER+x['folder']+x['name'], size=x['size'], pos=x['pos'], colorSpace='rgb')
+		if responded == True:
+			imgStim['response'] = Rect(self.win, size=imgStim['img_1'].size+.45, pos=US_POS, lineColorSpace='rgb')
 		for x in list(imgStim.keys()):
 			imgStim[x].draw()
 		self.win.update()
@@ -516,7 +524,7 @@ class GameGraphics:
 	def textScreen(self, textlist):
 		textStim = {}
 		for i, x in enumerate(textlist):
-			textStim['text_%s' % str(i-1)] = TextStim(self.win, text=x['text'], height=x['height'], color=x['color'], pos=x['pos'], colorSpace='rgb')
+			textStim['text_%s' % str(i+1)] = TextStim(self.win, text=x['text'], height=x['height'], color=x['color'], pos=x['pos'], colorSpace='rgb')
 		for x in list(textStim.keys()):
 			textStim[x].draw()
 		self.win.update()
@@ -542,17 +550,21 @@ class Interact:
 
 	def actionWait(self, time):
 		then = datetime.now(); now = datetime.now(); diff = now-then
+		interrupt = []
 		while diff.total_seconds() < time:
 			now = datetime.now()
 			diff = now-then
-			key = getKeys(keyList = [QUIT_KEY], timeStamped = True)
+			key = getKeys(keyList = [RESPOND_KEY, QUIT_KEY], timeStamped = True)
 			if len(key) > 0:
 				if key[-1][0] == QUIT_KEY:
 					game.finalSave(game.APPEND + '_QUIT')
 					game.localGraphics.win.close()
 					core.quit()
-
-	def actionRespond(self, time):
+				if key[-1][0] == RESPOND_KEY:
+					interrupt.append((datetime.now() - game.starttime).total_seconds())
+		return(interrupt)
+					
+	def actionRespond(self, time, images):
 		rtlist = []
 		then = datetime.now(); now = datetime.now(); diff = now-then
 		responded = False
@@ -563,6 +575,7 @@ class Interact:
 				if key[-1][0] == RESPOND_KEY:
 					rtlist.append(rt)
 					responded = True
+					game.localGraphics.stimScreen(images, True)
 				elif key[-1][0] == QUIT_KEY:
 					game.finalSave(game.APPEND + '_QUIT')
 					game.localGraphics.win.close()
@@ -581,7 +594,6 @@ class Interact:
 
 if __name__ == "__main__":
 
-	starttime = datetime.now()
 	game = LocalGame()
 	for i, x in enumerate(game.trial_bank):
 		game.runFixation(i+1)
