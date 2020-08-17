@@ -4,7 +4,8 @@ modules = [['psychopy', ['gui', 'monitors', 'core']],
 ['pygame'],
 ['numpy', ['mean']],
 ['pandas'],
-['PyQt5']
+['PyQt5'],
+['screeninfo', ['get_monitors']]
 ]
 
 import os, sys, subprocess, warnings, csv
@@ -14,28 +15,30 @@ from datetime import datetime
 from math import ceil, trunc
 
 for library in modules:
-	try:
-		if len(library) > 1:
-			for x in library[1]:
-				exec("from {module} import {submodule}".format(module=library[0], submodule=x))
-		elif len(library) == 1:
-			exec("import {module}".format(module=library[0]))
-	except Exception as e:
+	check_install = True
+	while check_install == True:
 		try:
-			subprocess.check_call([sys.executable, "-m", "pip", "install", library[0]])
-		except:
+			if len(library) > 1:
+				for x in library[1]:
+					exec("from {module} import {submodule}".format(module=library[0], submodule=x))
+			elif len(library) == 1:
+				exec("import {module}".format(module=library[0]))
+			check_install = False
+		except Exception as e:
 			try:
-				subprocess.check_call([sys.executable, "-m", "pip3", "install", library[0]])
+				subprocess.check_call([sys.executable, "-m", "pip", "install", library[0]])
 			except:
-				print("Cannot pip install %s library. Check pip before continuing. Remember, you cannot install libraries via pip within the PsychoPy app." % library[0])
+				try:
+					subprocess.check_call([sys.executable, "-m", "pip3", "install", library[0]])
+				except:
+					print("Cannot pip install %s library. Check pip before continuing. Remember, you cannot install libraries via pip within the PsychoPy app." % library[0])
+					check_install = False
 
 warnings.filterwarnings("ignore")
 
-MONITOR_WIDTH = 50
-MONITOR_DIST = 55
-MONITOR_SIZE = [1280,800]
+MONITOR_SIZE = [get_monitors()[0].width, get_monitors()[0].height]
 MONITOR_UNITS = 'norm'
-WINDOW_SIZE = (1200,900)
+WINDOW_SIZE = (get_monitors()[0].width, get_monitors()[0].height)
 
 COLOR_BLACK = [0,0,0]
 COLOR_WHITE = [1,1,1]
@@ -391,7 +394,7 @@ class LocalGame:
 		"Your job is to press the %s button as soon as you see the new image." % RESPOND_KEY, "",
 		"Please only press once. A box will appear around the image once you do.", "",
 		"A few moments after you respond, the pictures will dissapear.", "",
-		"Try not to press the %s button when the new images are not present. We record all responses.", "",
+		"Try not to press the %s button when the new images are not present. We record all responses." % RESPOND_KEY, "",
 		"Too many false starts will disqualify your participation.", "",
 		"Please attend to all images and try to respond as quickly as possible."]
 		self.localGraphics.instructScreen(textlist)
@@ -399,11 +402,12 @@ class LocalGame:
 		return
 
 	def runFixation(self, trial):
-		if trial == 1 and self.trial_bank[trial-1]['us_duration'] == "NA - Habituation":
-			self.runHabitInst()
-		elif trial == 1 and self.trial_bank[trial-1]['us_duration'] != "NA - Habituation":
-			self.runCondInst()
+		if trial == 1:
 			self.starttime = datetime.now()
+			if self.trial_bank[trial-1]['us_duration'] == "NA - Habituation":
+				self.runHabitInst()
+			elif self.trial_bank[trial-1]['us_duration'] != "NA - Habituation":
+				self.runCondInst()
 		elif self.trial_bank[trial-1]['us_duration'] != "NA - Habituation" and self.trial_bank[trial-2]['us_duration'] == "NA - Habituation":
 			self.runCondInst()
 		self.localGraphics.clearDisplay()
@@ -497,10 +501,10 @@ class LocalGame:
 class GameGraphics:
 
 	def __init__(self):
-		self.monitor = monitors.Monitor('expMonitor', width = MONITOR_WIDTH, distance = MONITOR_DIST)
+		self.monitor = monitors.Monitor('expMonitor')
 		self.monitor.setSizePix(MONITOR_SIZE)
 		self.monitor.saveMon()
-		self.win = Window(winType='pygame', size=WINDOW_SIZE, fullscr=True, screen=0, allowGUI=False, allowStencil=False, monitor='expMonitor', color=COLOR_BLACK, colorSpace='rgb255', blendMode='avg', useFBO=True, units=MONITOR_UNITS)
+		self.win = Window(winType='pygame', size=WINDOW_SIZE, fullscr=False, screen=0, allowGUI=False, allowStencil=False, monitor='expMonitor', color=COLOR_BLACK, colorSpace='rgb255', blendMode='avg', useFBO=True, units=MONITOR_UNITS)
 		self.win.mouseVisible = False
 
 	def instructScreen(self, textlist):
@@ -554,13 +558,13 @@ class Interact:
 		while diff.total_seconds() < time:
 			now = datetime.now()
 			diff = now-then
-			key = getKeys(keyList = [RESPOND_KEY, QUIT_KEY], timeStamped = True)
+			key = getKeys(keyList = [RESPOND_KEY, QUIT_KEY])
 			if len(key) > 0:
-				if key[-1][0] == QUIT_KEY:
+				if key[-1] == QUIT_KEY:
 					game.finalSave(game.APPEND + '_QUIT')
 					game.localGraphics.win.close()
 					core.quit()
-				if key[-1][0] == RESPOND_KEY:
+				if key[-1] == RESPOND_KEY:
 					interrupt.append((datetime.now() - game.starttime).total_seconds())
 		return(interrupt)
 					
@@ -569,14 +573,14 @@ class Interact:
 		then = datetime.now(); now = datetime.now(); diff = now-then
 		responded = False
 		while diff.total_seconds() < time:
-			key = getKeys(keyList = [RESPOND_KEY, QUIT_KEY], timeStamped = True)
+			key = getKeys(keyList = [RESPOND_KEY, QUIT_KEY])
 			if len(key) > 0:
 				rt = int((now-then).total_seconds()*1000)
-				if key[-1][0] == RESPOND_KEY:
+				if key[-1] == RESPOND_KEY:
 					rtlist.append(rt)
 					responded = True
 					game.localGraphics.stimScreen(images, True)
-				elif key[-1][0] == QUIT_KEY:
+				elif key[-1] == QUIT_KEY:
 					game.finalSave(game.APPEND + '_QUIT')
 					game.localGraphics.win.close()
 					core.quit()
