@@ -504,7 +504,7 @@ class GameGraphics:
 		self.monitor = monitors.Monitor('expMonitor')
 		self.monitor.setSizePix(MONITOR_SIZE)
 		self.monitor.saveMon()
-		self.win = Window(winType='pygame', size=WINDOW_SIZE, fullscr=True, screen=0, allowGUI=False, allowStencil=False, monitor='expMonitor', color=COLOR_BLACK, colorSpace='rgb255', blendMode='avg', useFBO=True, units=MONITOR_UNITS)
+		self.win = Window(winType='pygame', size=WINDOW_SIZE, fullscr=False, screen=0, allowGUI=False, allowStencil=False, monitor='expMonitor', color=COLOR_BLACK, colorSpace='rgb255', blendMode='avg', useFBO=True, units=MONITOR_UNITS)
 		self.win.mouseVisible = False
 
 	def instructScreen(self, textlist):
