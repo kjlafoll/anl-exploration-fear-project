@@ -1,26 +1,44 @@
-from kivy.app import App
-from kivy.properties import StringProperty, ListProperty, ObjectProperty, ObservableList
-from kivy.graphics import Line
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
-from kivy.core.window import Window
-from kivy.lang.builder import Builder
-from kivy.uix.popup import Popup
-from kivy.clock import Clock
-from kivy.uix.label import Label
-from kivy.uix.image import Image
-from kivy.metrics import dp
-from functools import partial
+modules = [['kivy'],
+['kivy.app', ['App']],
+['kivy.properties', ['StringProperty', 'ListProperty', 'ObjectProperty', 'ObservableList']],
+['kivy.graphics', ['Line']],
+['kivy.uix.floatlayout', ['FloatLayout']],
+['kivy.uix.screenmanager', ['ScreenManager', 'Screen', 'NoTransition']],
+['kivy.core.window', ['Window']],
+['kivy.lang.builder', ['Builder']],
+['kivy.uix.popup', ['Popup']],
+['kivy.clock', ['Clock']],
+['kivy.uix.label', ['Label']],
+['kivy.uix.image', ['Image']],
+['functools', ['partial']]
+]
 
-import os
-import sys
-import _locale
-from statistics import mean
-import csv
+import os, sys, csv, _locale
 from random import *
 from time import strftime
 from datetime import datetime
 from math import ceil, trunc
+from statistics import mean
+
+for library in modules:
+	check_install = True
+	while check_install == True:
+		try:
+			if len(library) > 1:
+				for x in library[1]:
+					exec("from {module} import {submodule}".format(module=library[0], submodule=x))
+			elif len(library) == 1:
+				exec("import {module}".format(module=library[0]))
+			check_install = False
+		except Exception as e:
+			try:
+				subprocess.check_call([sys.executable, "-m", "pip", "install", library[0]])
+			except:
+				try:
+					subprocess.check_call([sys.executable, "-m", "pip3", "install", library[0]])
+				except:
+					print("Cannot pip install %s library. Check pip before continuing. Remember, you cannot install libraries via pip within the PsychoPy app." % library[0])
+					check_install = False
 
 COLOR_BLACK = [0,0,0]
 COLOR_WHITE = [1,1,1]
@@ -73,8 +91,8 @@ else:
 
 DATA_FOLDER = os.path.expanduser("~/Documents/Data_CONDexp/")
 DATA_SUBFOLDER = 'ANL_%s/'
-# RESOURCE_FOLDER = "Resources_CONDexp/"
-RESOURCE_FOLDER = os.path.join(os.path.dirname(sys.executable), "Resources_CONDexp/")
+RESOURCE_FOLDER = "Resources_CONDexp/"
+# RESOURCE_FOLDER = os.path.join(os.path.dirname(sys.executable), "Resources_CONDexp/")
 US_PRESENT_FOLDER = "US_PRESENT_IMAGES/"
 US_ABSENT_FOLDER = "US_ABSENT_IMAGES/"
 CS_FOLDER = "CS_IMAGES/"

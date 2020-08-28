@@ -38,4 +38,13 @@ coll = COLLECT(exe, Tree('/Users/kylelafollette/anl-exploration-fear-project/CON
 app = BUNDLE(coll,
              name='FCond.app',
              icon='/Users/kylelafollette/anl-exploration-fear-project/CONDMain/stress_icon_blue_7Ri_icon.ico',
-             bundle_identifier=None)
+             bundle_identifier=None,
+             info_plist={
+                'NSPrincipalClass': 'NSApplication',
+                'NSAppleScriptEnabled': False,
+                'CFBundleDocumentTypes': [
+                {
+                'CFBundleIdentifier': 'edu.case.FCond',
+                'CFBundleName': 'FCond'
+                }]
+             })
