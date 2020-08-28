@@ -1,0 +1,120 @@
+<StartScreen>:
+    name: "Start"
+    BoxLayout:
+        orientation: "vertical"
+
+        GridLayout:
+            cols: 2
+            row_force_default: True
+            row_default_height: 40
+
+            Label:
+                text: "Participant ID:"
+
+            TextInput:
+                font_size: 20
+                multiline: False
+                focus: True
+                on_text: root.add_choice("subject_input", self.text)
+
+            Label:
+                text: "Design:"
+
+            Spinner:
+                text: "Select"
+                values: ("Preset", "Custom")
+                on_text: root.add_choice("design_input", self.text)
+
+        Button:
+            text: "Continue"
+            height: 20
+            row_default_height: 20
+            on_press: root.next_dlg(app.root.current)
+
+<PresetScreen>:
+    name: "Preset"
+    BoxLayout:
+        orientation: "vertical"
+        GridLayout:
+            cols: 2
+            row_force_default: True
+            row_default_height: 40
+            Label:
+                text: "Reinforcement Schedules:"
+            Spinner:
+                text: "Select"
+                values: ("Continuous", "Partial", "Continuous-Partial", "Partial-Continuous")
+                on_text: root.add_choice("schedule_input", self.text)
+            Label:
+                text: "Number of Trials:"
+            Spinner:
+                text: "Select"
+                values: ("10", "20", "40")
+                on_text: root.add_choice("trials_input", self.text)
+            Label:
+                text: "Design:"
+            Spinner:
+                text: "Select"
+                values: ("Delay", "Trace")
+                on_text: root.add_choice("design_input", self.text)
+            Label:
+                text: "Habituation Trials:"
+            Spinner:
+                text: "Select"
+                values: ("4", "8", "None")
+                on_text: root.add_choice("habit_input", self.text)
+        Button:
+            text: "Continue"
+            height: 20
+            row_default_height: 20
+            on_press: root.next_dlg(app.root.current)
+
+<CustomScreen>:
+    name: "Custom"
+    BoxLayout:
+        Label:
+            text: root.labeltext
+        TextInput:
+            font_size: 20
+            multiline: False
+            focus: True
+            on_text: root.add_choice("custom_input", self.text)
+        Button:
+            text: "Continue"
+            height: 20
+            row_default_height: 20
+            on_press: root.next_dlg(app.root.current)
+
+<WarningPopUp>:
+    name: "Warning"
+    size: root.size
+    pos: root.pos
+    BoxLayout:
+        orientation: "vertical"
+
+        Label:
+            font_size: 20
+            text: root.errors_text
+            markup: True
+
+        Button:
+            size_hint_y: None
+            height: 30
+            font_size: 20
+            text: "OK"
+            on_release: root.cancel()
+
+<InstructScreen>:
+    name: "Instruct"
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'center'
+
+<StimScreen>:
+    name: "Stim"
+    AnchorLayout:
+        anchor_x: 'center'
+        anchor_y: 'center'
+
+
+            

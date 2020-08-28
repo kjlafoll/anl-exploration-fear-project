@@ -1,9 +1,9 @@
-cs_duration,us_duration,traceinterval_duration,iti_duration,cs_type,us_stimulus_name,reinforced,overlap
-8,NA - Habituation,0,6,CS+,NA - Habituation,NA - Habituation,NA - Habituation
-11,NA - Habituation,0,6,CS-,NA - Habituation,NA - Habituation,NA - Habituation
-9,4,0,6,CS-,ns.png,True,True
-12,4,0,6,CS+,us.png,True,True
-6,4,2,4,CS-,ns.png,True,False
-6,4,2.5,4,CS+,us.png,False,False
-6,4,1.5,4,CS-,ns.png,True,False
-6,4,2,4,CS+,us.png,True,False
+us_stimulus_name,traceinterval_duration,iti_duration,cs_duration,cs_type,us_duration,reinforced,overlap
+NA - Habituation,0,6,8,CS+,NA - Habituation,NA - Habituation,NA - Habituation
+NA - Habituation,0,6,11,CS-,NA - Habituation,NA - Habituation,NA - Habituation
+ns.png,0,6,9,CS-,4,True,True
+us.png,0,6,12,CS+,4,True,True
+ns.png,2,4,6,CS-,4,True,False
+us.png,2.5,4,6,CS+,4,False,False
+ns.png,1.5,4,6,CS-,4,True,False
+us.png,2,4,6,CS+,4,True,False
