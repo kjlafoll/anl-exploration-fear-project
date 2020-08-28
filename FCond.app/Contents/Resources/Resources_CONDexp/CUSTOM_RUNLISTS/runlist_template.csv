@@ -1,9 +1,0 @@
-cs_duration,us_duration,overlap,reinforced,traceinterval_duration,us_stimulus_name,iti_duration,cs_type
-8,NA - Habituation,NA - Habituation,NA - Habituation,0,NA - Habituation,6,CS+
-11,NA - Habituation,NA - Habituation,NA - Habituation,0,NA - Habituation,6,CS-
-9,4,True,True,0,ns.png,6,CS-
-12,4,True,True,0,us.png,6,CS+
-6,4,False,True,2,ns.png,4,CS-
-6,4,False,False,2.5,us.png,4,CS+
-6,4,False,True,1.5,ns.png,4,CS-
-6,4,False,True,2,us.png,4,CS+

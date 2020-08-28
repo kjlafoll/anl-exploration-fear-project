@@ -1,2 +1,0 @@
-us_rt	cs_duration	cs_offset	us_offset	us_duration	trial	us_stimulus_name	us_onset	traceinterval_duration	cs_type	reinforced	fs_response_time	id	overlap	iti_duration	cs_onset
-702	9.745649392789577	14.573128	14.573128	4.0	1	9210.jpg	12.668362	0.0	CS-	True	[8.28849]	12345	True	6.792385482547122	6.78799
