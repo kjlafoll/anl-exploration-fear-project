@@ -1,0 +1,4 @@
+'autocomplete-bibtex':
+ 'bibtex': [
+   'references_ddm.bib'
+ ]
